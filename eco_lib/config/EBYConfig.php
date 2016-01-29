@@ -4,8 +4,16 @@ namespace eco_lib\config;
 
 class EBYConfig
 {
+
+	private $config = null;
+
 	public function __construct()
 	{
-		echo "config EBY<br />";
 	}
+
+	public function getConfig()
+	{
+		return $this->config;
+	}
+
 }
