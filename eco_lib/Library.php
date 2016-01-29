@@ -7,9 +7,7 @@ use eco_lib\config\EBYConfig as EBYConfig;
 
 class Library
 {
-
 	private $config_aws;
-
 	private $config_eby;
 
 	public function __construct(AWSConfig $aws_cfg, EBYConfig $eby_cfg)
