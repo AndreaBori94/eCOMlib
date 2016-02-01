@@ -1,4 +1,4 @@
-     <?php
+<?php
      /*
      @author => trev Tune (http://phpmyseo.tk)
      @licence => GPL 2

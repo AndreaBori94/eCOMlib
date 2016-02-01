@@ -77,7 +77,7 @@
     $to=name of image e.g path/to/img.jpg
     */
      public function save($to=false) {
-      $to=$to ? $to:$this->image;
+      $to=$to ? $to : $this->img;
     if(is_file($to))
        unlink($to);
 
