@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 <?php
 /**
  * Copyright 2014 David T. Sadler
@@ -45,6 +44,3 @@ return array(
     'shoppingApiVersion' => '871',
     'halfFindingApiVersion' => '1.2.0'
 );
-=======
-asd
->>>>>>> origin/master
