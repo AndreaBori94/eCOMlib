@@ -20,20 +20,24 @@ if (file_exists($target_file)) {
     echo "Sorry, file already exists.";
     //$uploadOk = 0;
 }
-// Check file size
-/*
+
 if ($_FILES["fileToUpload"]["size"] > 500000) {
     echo "Sorry, your file is too large.";
     $uploadOk = 0;
 }
-*/
 
-// Allow certain file formats
-if($imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg"
-&& $imageFileType != "gif" ) {
-    echo "Sorry, only JPG, JPEG, PNG & GIF files are allowed.";
-    $uploadOk = 0;
+$allowed = array ("jpg", "png", "jpeg", "gif");
+$match = false;
+foreach ($allowed as $type) {
+	if ( $imageFileType === $type ) {
+		$match = true;
+	}
 }
+if ( !$match ) {
+	echo "Sorry, only JPG, JPEG, PNG & GIF files are allowed.";
+	$uploadOk = 0;
+}
+
 // Check if $uploadOk is set to 0 by an error
 if ($uploadOk == 0) {
     echo "Sorry, your file was not uploaded.";
@@ -47,117 +51,76 @@ if ($uploadOk == 0) {
 }
 
 
-
-
-
-
-
-
-
-
-
-/*
- include "image_editor.php";
-if ( isset($target_file) ) {
-	echo "Processing: " . urldecode(trim($target_file));
+if (isset ( $target_file ))
+{
+	echo "Processing: " . urldecode ( trim ( $target_file ) );
 	
-	$se=new SImEdi();
-	$se->create();
-	$se->load($target_file);
-
-	$iw = imagesx($se->img_res);
-	$ih = imagesy($se->img_res);
-	$mw = (int) round($iw /2);
-	$mh = (int) round($ih /2);
+	$size =getimagesize($target_file);
+	$image_1 = null;
+	switch( $size["mime"]){
+		case "image/jpeg":
+			$image_1 = imagecreatefromjpeg($target_file);
+			unlink($target_file);
+			break;
+		case "image/gif":
+			$image_1 = imagecreatefromgif($target_file);
+			unlink($target_file);
+			break;
+		case "image/png":
+			$image_1 = imagecreatefrompng($target_file);
+			unlink($target_file);
+			break;
+		default:
+			$image_1 = false;
+			break;
+	}
 	
-
-	$test = new SImEdi();
-	$isW = false;
-	if ( $iw >= $ih ) {
-		echo "Lunga" . ($iw-$ih);
-		$test->create('uploads/background_image.png', $iw, $iw);
-		$isW = true;
+	$origin_x = imagesx($image_1);
+	$origin_y = imagesy($image_1);
+	
+	$to_use = $origin_y;
+	$isWidth = false;
+	if ( $origin_x >= $origin_y ) {
+		$to_use = $origin_x;
+		$isWidth = true;
+	}
+	
+	$image_2 = imagecreatetruecolor($to_use, $to_use);
+	imagesavealpha($image_2, true);
+	$color = imagecolorallocatealpha($image_2, 0, 0, 0, 127);
+	imagefill($image_2, 0, 0, $color);
+	
+	$dX = null;
+	$dY = null;
+	if ( $isWidth ) {
+		$dX = 0;
+		$dY = imagesy($image_2)/2 - ($origin_y/2);
 	} else {
-		echo "Alta" . ($ih-$iw);
-		$test->create('upload/background_image.png', $ih, $ih);		
-	}
-	$test->plugin('manipulation');
-	$test->save('upload/background_image.png');
-	
-	/*
-	 if ( $isW ) {
-		$test->manipulation->impose2(
-				'upload/background_image.png',
-				$target_file,
-				$iw,$iw);
-	} else {
-		$test->manipulation->impose2(
-				'upload/background_image.png',
-				$target_file,
-				$ih,$ih);
-	}
-	 //END * /
-	if ( $isW ) {
-		$test->manipulation->impose($target_file, 0, 0, $iw, $iw, 0);
-	} else {
-		//add other version
-	}
-	$test->save("upload/final.jpg");
-	$se->save($target_file);
-	
-	echo "Resolution: " . $iw . "x" . $ih;
-	echo "Res Middle: " . $mw . "x" . $mh;
-}
- */
-
-
-include "image_editor.php";
-
-
-if ( isset($target_file) ) {
-	echo "Processing: " . urldecode(trim($target_file));
-
-	$se=new SImEdi();
-	$se->create();
-	$se->load($target_file);
-	
-	$iw = imagesx($se->img_res);
-	$ih = imagesy($se->img_res);
-	$isWidthBigger = false;
-	$square_var = $ih;
-	if ( $iw >= $ih ) {
-		$isWidthBigger = true;
-		$square_var = $iw;
+		$dY = 0;
+		$dX = imagesx($image_2)/2 - ($origin_x/2);
 	}
 	
-	$se->plugin('manipulation');
+	imagealphablending ( $image_2, true );
+	imagesavealpha ( $image_2, true );
+	imagecopy ( $image_2, $image_1, $dX, $dY, 0, 0, $origin_x, $origin_y );
+
+	replace_until($target_file, array (".jpg", ".png", ".jpeg", ".gif"), '.png');
+	imagepng ( $image_2, $target_file );
+
+	imagedestroy($image_1);
+	imagedestroy($image_2);
 	
-	try {
-		if ( !$se->manipulation->impose($target_file, 100, 100, 0, 0, 1) ) {
-			echo $se->error;
-		}
-		echo "<br /> impose ($target_file)";
-	} catch (Exception $e) {
-		echo $e;
-	}
-	$se->save();
+	Header("location: test.php");
 	
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+function replace_until($target, array $list, $str) {
+	foreach ( $list as $type ) {
+		$target = str_replace($type, $str, $target);
+	}
+	return $target;
+}
 
 
 
